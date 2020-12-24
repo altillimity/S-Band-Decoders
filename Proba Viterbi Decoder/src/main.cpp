@@ -35,7 +35,7 @@ void shiftWithConstantSize(uint8_t *arr, int pos, int length)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2 && argc != 3)
+    if (argc != 3 && argc != 4)
     {
         std::cout << "Usage : " << argv[0] << " inputsoftsymbols.bin outputframes.bin [-v]" << std::endl;
         return 1;
@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
     bool probav = false;
 
     // Terra mode?
-    if (argc == 3)
+    if (argc == 4)
     {
-        if (std::string(argv[2]) == "-v")
+        if (std::string(argv[3]) == "-v")
             probav = true;
     }
 
