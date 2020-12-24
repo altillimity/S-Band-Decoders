@@ -35,7 +35,7 @@ The flowcharts require GNU Radio 3.8 or above.
 - Record a baseband of a pass
 - Demodulate with Proba-1-2 Demodulator   
 - Process with Proba Viterbi Decoder to get CADUs   
-- TBD - Data decoder coming later  
+- Run through Proba Decoder in Proba-2 mode (Proba-Decoder 2 proba2.cadu)
 
 # Proba-V
 
