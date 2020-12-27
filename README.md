@@ -1,6 +1,10 @@
 # S-Band-Decoders
 A bunch of programs to decode satellites in S-Band
 
+### Credits
+
+Thanks @r2x0t for giving me some advice on decoding Proba, @uhf-satcom for providing the data :)
+
 ### Dependencies
 
 Some projects will require (or / and) :
