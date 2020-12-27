@@ -3,7 +3,7 @@ A bunch of programs to decode satellites in S-Band
 
 ### Credits
 
-Thanks @r2x0t for giving me some advice on decoding Proba, @uhf-satcom for providing the data :)
+Thanks @r2x0t for giving me some advice on decoding Proba and @uhf-satcom for providing the data :)
 
 ### Dependencies
 
@@ -26,7 +26,7 @@ The flowcharts require GNU Radio 3.8 or above.
 - Record a baseband of a pass
 - Demodulate with Proba-1-2 Demodulator   
 - Process with Proba Viterbi Decoder to get CADUs   
-- TBD - Data decoder coming later   
+- Run through Proba Decoder in Proba-1 mode (Proba-Decoder 1 proba1.cadu)   
 
 # Proba-2
 

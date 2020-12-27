@@ -7,6 +7,7 @@
 #include "ccsds/vcdu.h"
 #include "ccsds/demuxer.h"
 #include "ccsds/mpdu.h"
+#include "chris_reader.h"
 #include "swap_reader.h"
 
 int main(int argc, char *argv[])
@@ -50,12 +51,41 @@ int main(int argc, char *argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << std::endl;
 
-    // Proba-1 Routine
+ // Proba-1 Routine
     if (mode_proba1)
     {
         std::cout << "Starting in Proba-1 mode...\n"
                   << std::endl;
-        std::cout << "Proba-1 is not yet supported!" << std::endl;
+
+        CHRISReader chris_reader;
+
+        // Read until EOF
+        while (!data_in.eof())
+        {
+            // Read buffer
+            data_in.read((char *)buffer, 1279);
+
+            int vcid = libccsds::parseVCDU(buffer).vcid;
+
+            if (vcid == 1)
+            {
+                std::vector<libccsds::CCSDSPacket> pkts = ccsdsDemuxer.work(buffer);
+
+                if (pkts.size() > 0)
+                {
+                    for (libccsds::CCSDSPacket pkt : pkts)
+                    {
+                        if (pkt.header.apid == 2047)
+                            continue;
+
+                        if (pkt.header.apid == 0)
+                        {
+                            chris_reader.work(pkt);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Proba-2
