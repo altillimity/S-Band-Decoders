@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     // Output and Input file
     std::ifstream data_in(argv[2], std::ios::binary);
-    //std::ofstream data_out("proba.cadu", std::ios::binary);
+    //std::ofstream data_out("chris.bin", std::ios::binary);
 
     // Read buffer
     uint8_t buffer[1279];
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     std::cout << "---------------------------" << std::endl;
     std::cout << std::endl;
 
- // Proba-1 Routine
+    // Proba-1 Routine
     if (mode_proba1)
     {
         std::cout << "Starting in Proba-1 mode...\n"
