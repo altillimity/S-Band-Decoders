@@ -180,7 +180,7 @@ namespace libccsds
                         nextHeaderPointer = nextHeaderPointer + totalPacketLength;
                     }
                 }
-                //else
+                else
                 {
                     // Sanity check
                     if (workingOnPacket)
