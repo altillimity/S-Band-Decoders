@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        chris_reader.save();
     }
 
     // Proba-2

@@ -64,6 +64,8 @@ void CHRISReader::workCh1(libccsds::CCSDSPacket &packet, uint16_t &count_marker)
         posb += 3;
     }
 
+    frame_count_ch1++;
+
     // Frame counter
     if (count_marker == max_value)
     {
@@ -79,6 +81,7 @@ void CHRISReader::workCh1(libccsds::CCSDSPacket &packet, uint16_t &count_marker)
 
         std::fill(&tempChannelBuffers[0][0], &tempChannelBuffers[0][748 * 12096], 0);
         count++;
+        frame_count_ch1 = 0;
     }
 }
 
@@ -96,6 +99,8 @@ void CHRISReader::workCh2(libccsds::CCSDSPacket &packet, uint16_t &count_marker)
         posb += 3;
     }
 
+    frame_count_ch2++;
+
     // Frame counter
     if (count_marker == max_value)
     {
@@ -111,6 +116,7 @@ void CHRISReader::workCh2(libccsds::CCSDSPacket &packet, uint16_t &count_marker)
 
         std::fill(&tempChannelBuffers[1][0], &tempChannelBuffers[1][748 * 12096], 0);
         count++;
+        frame_count_ch2 = 0;
     }
 }
 
@@ -206,4 +212,41 @@ void CHRISReader::writeWaterCompos(cimg_library::CImg<unsigned short> &img)
     image13169.draw_image(0, 0, 0, 1, imgs[16]);
     image13169.draw_image(0, 0, 0, 2, imgs[9]);
     image13169.save_png(std::string("CHRIS-" + std::to_string(count) + "-RGB13-16-9.png").c_str());
+}
+
+void CHRISReader::save()
+{
+    std::cout << "Saving in-progress CHRIS data! (if any)" << std::endl;
+
+    if (frame_count_ch1 != 0)
+    {
+        std::cout << "Finished CHRIS image! Saving as CHRIS-" + std::to_string(count) + ".png. Mode " << getModeName(mode) << std::endl;
+        cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(tempChannelBuffers[1], current_width, current_height);
+        img.normalize(0, 65535);
+        img.save_png(std::string("CHRIS-" + std::to_string(count) + ".png").c_str());
+
+        if (mode == CHLOROPHYL_MODE)
+            writeChlorophylCompos(img);
+        else if (mode == WATER_MODE)
+            writeWaterCompos(img);
+
+        std::fill(&tempChannelBuffers[1][0], &tempChannelBuffers[1][748 * 12096], 0);
+        count++;
+    }
+
+    if (frame_count_ch2 != 0)
+    {
+        std::cout << "Finished CHRIS image! Saving as CHRIS-" + std::to_string(count) + ".png. Mode " << getModeName(mode) << std::endl;
+        cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(tempChannelBuffers[1], current_width, current_height);
+        img.normalize(0, 65535);
+        img.save_png(std::string("CHRIS-" + std::to_string(count) + ".png").c_str());
+
+        if (mode == CHLOROPHYL_MODE)
+            writeChlorophylCompos(img);
+        else if (mode == WATER_MODE)
+            writeWaterCompos(img);
+
+        std::fill(&tempChannelBuffers[1][0], &tempChannelBuffers[1][748 * 12096], 0);
+        count++;
+    }
 }
