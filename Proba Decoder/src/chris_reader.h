@@ -21,7 +21,7 @@ private:
 
 private:
     void writeChlorophylCompos(cimg_library::CImg<unsigned short> &img);
-    void writeWaterCompos(cimg_library::CImg<unsigned short> &img);
+    void writeLandCompos(cimg_library::CImg<unsigned short> &img);
     std::string getModeName(int mode);
 
 public:

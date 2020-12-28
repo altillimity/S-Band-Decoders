@@ -145,8 +145,8 @@ void CHRISImageParser::save()
 
         if (mode == CHLOROPHYL_MODE)
             writeChlorophylCompos(img);
-        else if (mode == WATER_MODE)
-            writeWaterCompos(img);
+        else if (mode == LAND_MODE)
+            writeLandCompos(img);
 
         std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
         count_ref++;
@@ -184,7 +184,7 @@ void CHRISImageParser::writeChlorophylCompos(cimg_library::CImg<unsigned short> 
     image13169.save_png(std::string("CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png").c_str());
 }
 
-void CHRISImageParser::writeWaterCompos(cimg_library::CImg<unsigned short> &img)
+void CHRISImageParser::writeLandCompos(cimg_library::CImg<unsigned short> &img)
 {
     std::cout << "Writing water mode RGB compositions..." << std::endl;
     cimg_library::CImg<unsigned short> imgs[19];
