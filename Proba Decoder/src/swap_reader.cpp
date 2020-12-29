@@ -9,9 +9,10 @@
 #define cimg_display 0
 #include "CImg.h"
 
-SWAPReader::SWAPReader()
+SWAPReader::SWAPReader(std::string &outputfolder)
 {
     count = 0;
+    output_folder = outputfolder;
 }
 
 void SWAPReader::work(libccsds::CCSDSPacket &packet)
@@ -63,7 +64,7 @@ void SWAPReader::save()
         }
 
         std::cout << " Good! Saving as png... ";
-        img.save_png(std::string(filename + ".png").c_str());
+        img.save_png(std::string(output_folder + "/" + filename + ".png").c_str());
 
         std::cout << "Done! Deleting jpeg..." << std::endl;
 
