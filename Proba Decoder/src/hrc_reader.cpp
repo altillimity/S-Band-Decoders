@@ -65,8 +65,9 @@ void HRCReader::save()
         std::cout << "Finished HRC image! Saving as HRC-" + std::to_string(count) + ".png" << std::endl;
         cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(tempChannelBuffer, 1072, 1072);
         img.normalize(0, 65535);
-        img.equalize(1000);
         img.save_png(std::string(output_folder + "/HRC-" + std::to_string(count) + ".png").c_str());
+        img.equalize(1000);
+        img.save_png(std::string(output_folder + "/HRC-" + std::to_string(count) + "-EQU.png").c_str());
 
         std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
         count++;
