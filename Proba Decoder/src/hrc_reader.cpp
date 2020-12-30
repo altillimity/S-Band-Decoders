@@ -24,6 +24,14 @@ uint8_t reverseBits(uint8_t byte)
     return byte;
 }
 
+uint16_t reverse16Bits(uint16_t v)
+{
+    uint16_t r = 0;
+    for (int i = 0; i < 16; ++i, v >>= 1)
+        r = (r << 1) | (v & 0x01);
+    return r;
+}
+
 void HRCReader::work(libccsds::CCSDSPacket &packet)
 {
     if (packet.payload.size() < 21458)
@@ -33,18 +41,15 @@ void HRCReader::work(libccsds::CCSDSPacket &packet)
 
     int pos = 21;
 
-    for (int i = 0; i < 21458; i++)
-        packet.payload[i] = reverseBits(packet.payload[i]);
-
     // Convert into 10-bits values
     for (int i = 0; i < 17152; i += 4)
     {
         if (count_marker <= 65)
         {
-            tempChannelBuffer[count_marker * 17152 + i + 0] = reverseBits((packet.payload[pos + 0] << 2) | (packet.payload[pos + 1] >> 6));
-            tempChannelBuffer[count_marker * 17152 + i + 1] = reverseBits(((packet.payload[pos + 1] % 64) << 4) | (packet.payload[pos + 2] >> 4));
-            tempChannelBuffer[count_marker * 17152 + i + 2] = reverseBits(((packet.payload[pos + 2] % 16) << 6) | (packet.payload[pos + 3] >> 2));
-            tempChannelBuffer[count_marker * 17152 + i + 3] = reverseBits(((packet.payload[pos + 3] % 4) << 8) | packet.payload[pos + 4]);
+            tempChannelBuffer[count_marker * 17152 + i + 0] = reverse16Bits((reverseBits(packet.payload[pos + 0]) << 2) | (reverseBits(packet.payload[pos + 1]) >> 6));
+            tempChannelBuffer[count_marker * 17152 + i + 1] = reverse16Bits(((reverseBits(packet.payload[pos + 1]) % 64) << 4) | (reverseBits(packet.payload[pos + 2]) >> 4));
+            tempChannelBuffer[count_marker * 17152 + i + 2] = reverse16Bits(((reverseBits(packet.payload[pos + 2]) % 16) << 6) | (reverseBits(packet.payload[pos + 3]) >> 2));
+            tempChannelBuffer[count_marker * 17152 + i + 3] = reverse16Bits(((reverseBits(packet.payload[pos + 3]) % 4) << 8) | reverseBits(packet.payload[pos + 4]));
             pos += 5;
         }
     }
