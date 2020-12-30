@@ -71,7 +71,7 @@ void CHRISImageParser::work(libccsds::CCSDSPacket &packet, int &ch)
     if (ch == 13)
         posb = 16;
     if (ch == 14)
-        posb = 17;
+        posb = 16;
     if (ch == 15)
         posb = 16;
 
