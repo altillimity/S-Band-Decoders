@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     // Output and Input file
     std::ifstream data_in(argv[2], std::ios::binary);
     //std::ofstream data_out("chris.bin", std::ios::binary);
-    
+
     std::string output_folder = ".";
     if (argc == 4)
     {
@@ -93,11 +93,14 @@ int main(int argc, char *argv[])
 
                         if (pkt.header.apid == 0)
                         {
-                            int mode_marker = pkt.payload[7 - 6];
+                            int mode_marker = pkt.payload[1];
                             if (mode_marker == 169)
                                 hrc_reader.work(pkt);
                             else
                                 chris_reader.work(pkt);
+
+                            //if (pkt.payload.size() >= 11538)
+                            //    data_out.write((char *)pkt.payload.data(), 11538);
                         }
                     }
                 }
@@ -105,6 +108,7 @@ int main(int argc, char *argv[])
         }
         chris_reader.save();
         hrc_reader.save();
+        //data_out.close();
     }
 
     // Proba-2

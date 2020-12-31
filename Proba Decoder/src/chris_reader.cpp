@@ -3,10 +3,10 @@
 #include <iostream>
 #include <map>
 
-#define ALL_MODE 246
-#define WATER_MODE 117
-#define LAND_MODE 118
-#define CHLOROPHYL_MODE 242
+#define ALL_MODE 107
+#define WATER_MODE 92
+#define LAND_MODE 106
+#define CHLOROPHYL_MODE 43
 #define LAND_ALL_MODE 5 // Never seen yet...
 
 template <class InputIt, class T = typename std::iterator_traits<InputIt>::value_type>
@@ -47,8 +47,8 @@ CHRISImageParser::~CHRISImageParser()
 
 void CHRISImageParser::work(libccsds::CCSDSPacket &packet, int &ch)
 {
-    uint16_t count_marker = packet.payload[16 - 6] << 8 | packet.payload[17 - 6];
-    int mode_marker = packet.payload[7 - 6];
+    uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
+    int mode_marker = (packet.payload[1] & 0x0F) << 4 | packet.payload[2] >> 4;
 
     //std::cout << "CH " << channel_marker << std::endl;
     //std::cout << "CNT " << count_marker << std::endl;
