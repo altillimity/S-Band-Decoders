@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     // Output and Input file
     std::ifstream data_in(argv[2], std::ios::binary);
-    //std::ofstream data_out("chris.bin", std::ios::binary);
+    //std::ofstream data_out("chrisall.bin", std::ios::binary);
 
     std::string output_folder = ".";
     if (argc == 4)
