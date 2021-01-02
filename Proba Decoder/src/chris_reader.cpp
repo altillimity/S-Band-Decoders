@@ -27,6 +27,10 @@ CHRISReader::CHRISReader(std::string &outputfolder)
 {
     count = 0;
     output_folder = outputfolder;
+}
+
+CHRISImageParser::CHRISImageParser(int &count, std::string &outputfolder) : count_ref(count)
+{
     tempChannelBuffer = new unsigned short[748 * 12096];
     mode = 0;
     current_width = 12096;
@@ -36,16 +40,13 @@ CHRISReader::CHRISReader(std::string &outputfolder)
     output_folder = outputfolder;
 }
 
-CHRISReader::~CHRISReader()
+CHRISImageParser::~CHRISImageParser()
 {
     delete[] tempChannelBuffer;
 }
 
-void CHRISReader::work(libccsds::CCSDSPacket &packet)
+void CHRISImageParser::work(libccsds::CCSDSPacket &packet, int &ch)
 {
-    if (packet.payload.size() < 11538)
-        return;
-
     uint16_t count_marker = packet.payload[10] << 8 | packet.payload[11];
     int mode_marker = packet.payload[9] & 0x03;
 
@@ -143,14 +144,33 @@ void CHRISReader::work(libccsds::CCSDSPacket &packet)
     modeMarkers.push_back(mode_marker);
 }
 
-void CHRISReader::save()
+void CHRISReader::work(libccsds::CCSDSPacket &packet)
+{
+    if (packet.payload.size() < 11538)
+        return;
+
+    int channel_marker = (packet.payload[8 - 6] % (int)pow(2, 3)) << 1 | packet.payload[9 - 6] >> 7;
+
+    //std::cout << "CH " << channel_marker << std::endl;
+
+    // Start new image
+    if (imageParsers.find(channel_marker) == imageParsers.end())
+    {
+        std::cout << "Found new CHRIS image! Marker " << channel_marker << std::endl;
+        imageParsers.insert(std::pair<int, std::shared_ptr<CHRISImageParser>>(channel_marker, std::make_shared<CHRISImageParser>(count, output_folder)));
+    }
+
+    imageParsers[channel_marker]->work(packet, channel_marker);
+}
+
+void CHRISImageParser::save()
 {
     if (frame_count != 0)
     {
-        std::cout << "Finished CHRIS image! Saving as CHRIS-" + std::to_string(count) + ".png. Mode " << getModeName(mode) << std::endl;
+        std::cout << "Finished CHRIS image! Saving as CHRIS-" + std::to_string(count_ref) + ".png. Mode " << getModeName(mode) << std::endl;
         cimg_library::CImg<unsigned short> img = cimg_library::CImg<unsigned short>(tempChannelBuffer, current_width, current_height);
         img.normalize(0, 65535);
-        img.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + ".png").c_str());
+        img.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + ".png").c_str());
 
         if (mode == CHLOROPHYL_MODE)
             writeChlorophylCompos(img);
@@ -160,11 +180,19 @@ void CHRISReader::save()
             writeAllCompos(img);
 
         std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
-        count++;
+        count_ref++;
     }
 };
 
-void CHRISReader::writeChlorophylCompos(cimg_library::CImg<unsigned short> &img)
+void CHRISReader::save()
+{
+    std::cout << "Saving in-progress CHRIS data! (if any)" << std::endl;
+
+    for (std::pair<int, std::shared_ptr<CHRISImageParser>> currentPair : imageParsers)
+        currentPair.second->save();
+}
+
+void CHRISImageParser::writeChlorophylCompos(cimg_library::CImg<unsigned short> &img)
 {
     std::cout << "Writing chlorophyl mode RGB compositions..." << std::endl;
     cimg_library::CImg<unsigned short> img9 = img;
@@ -178,16 +206,16 @@ void CHRISReader::writeChlorophylCompos(cimg_library::CImg<unsigned short> &img)
     image16169.draw_image(0, 0, 0, 0, img16);
     image16169.draw_image(0, 0, 0, 1, img16);
     image16169.draw_image(0, 0, 0, 2, img9);
-    image16169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB16-16-9.png").c_str());
+    image16169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB16-16-9.png").c_str());
 
     cimg_library::CImg<unsigned short> image13169(375, 748, 1, 3);
     image13169.draw_image(0, 0, 0, 0, img13);
     image13169.draw_image(0, 0, 0, 1, img16);
     image13169.draw_image(0, 0, 0, 2, img9);
-    image13169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB13-16-9.png").c_str());
+    image13169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png").c_str());
 }
 
-void CHRISReader::writeLandCompos(cimg_library::CImg<unsigned short> &img)
+void CHRISImageParser::writeLandCompos(cimg_library::CImg<unsigned short> &img)
 {
     std::cout << "Writing water mode RGB compositions..." << std::endl;
     cimg_library::CImg<unsigned short> imgs[19];
@@ -201,28 +229,28 @@ void CHRISReader::writeLandCompos(cimg_library::CImg<unsigned short> &img)
     image5170.draw_image(0, 0, 0, 0, imgs[5]);
     image5170.draw_image(0, 0, 0, 1, imgs[17]);
     image5170.draw_image(0, 0, 0, 2, imgs[0]);
-    image5170.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB5-17-0.png").c_str());
+    image5170.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB5-17-0.png").c_str());
 
     cimg_library::CImg<unsigned short> image81410(375, 748, 1, 3);
     image81410.draw_image(0, 0, 0, 0, imgs[8]);
     image81410.draw_image(0, 0, 0, 1, imgs[14]);
     image81410.draw_image(0, 0, 0, 2, imgs[10]);
-    image81410.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB8-14-10.png").c_str());
+    image81410.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-14-10.png").c_str());
 
     cimg_library::CImg<unsigned short> image8130(375, 748, 1, 3);
     image8130.draw_image(0, 0, 0, 0, imgs[8]);
     image8130.draw_image(0, 0, 0, 1, imgs[13]);
     image8130.draw_image(0, 0, 0, 2, imgs[0]);
-    image8130.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB8-13-0.png").c_str());
+    image8130.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB8-13-0.png").c_str());
 
     cimg_library::CImg<unsigned short> image13169(375, 748, 1, 3);
     image13169.draw_image(0, 0, 0, 0, imgs[13]);
     image13169.draw_image(0, 0, 0, 1, imgs[16]);
     image13169.draw_image(0, 0, 0, 2, imgs[9]);
-    image13169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB13-16-9.png").c_str());
+    image13169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-RGB13-16-9.png").c_str());
 }
 
-void CHRISReader::writeAllCompos(cimg_library::CImg<unsigned short> &img)
+void CHRISImageParser::writeAllCompos(cimg_library::CImg<unsigned short> &img)
 {
     std::cout << "Dumping all 63 channels... (Temporary!)" << std::endl;
     cimg_library::CImg<unsigned short> imgs[63];
@@ -230,11 +258,11 @@ void CHRISReader::writeAllCompos(cimg_library::CImg<unsigned short> &img)
     {
         imgs[i] = img;
         imgs[i].crop(4 + i * 192, 4 + i * 192 + 186);
-        imgs[i].save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-CHANNEL-" + std::to_string(i + 1) + ".png").c_str());
+        imgs[i].save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count_ref) + "-CHANNEL-" + std::to_string(i + 1) + ".png").c_str());
     }
 }
 
-std::string CHRISReader::getModeName(int mode)
+std::string CHRISImageParser::getModeName(int mode)
 {
     if (mode == ALL_MODE)
         return "ALL";
