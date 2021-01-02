@@ -61,7 +61,7 @@ void CHRISReader::work(libccsds::CCSDSPacket &packet)
     if (mode_marker == ALL_MODE)
     {
         if (tx_mode == 8)
-            posb = 16;
+            posb = 15;
         if (tx_mode == 0)
             posb = 15;
         if (tx_mode == 200)
@@ -130,13 +130,13 @@ void CHRISReader::work(libccsds::CCSDSPacket &packet)
         {
             current_width = 12096;
             current_height = 374;
-            max_value = 589;
+            max_value = 588;
         }
         else if (mode == LAND_ALL_MODE)
         {
             current_width = 7680;
             current_height = 374;
-            max_value = 589;
+            max_value = 588;
         }
     }
 
@@ -156,6 +156,8 @@ void CHRISReader::save()
             writeChlorophylCompos(img);
         if (mode == LAND_MODE)
             writeLandCompos(img);
+        if (mode == ALL_MODE)
+            writeAllCompos(img);
 
         std::fill(&tempChannelBuffer[0], &tempChannelBuffer[748 * 12096], 0);
         count++;
@@ -218,6 +220,18 @@ void CHRISReader::writeLandCompos(cimg_library::CImg<unsigned short> &img)
     image13169.draw_image(0, 0, 0, 1, imgs[16]);
     image13169.draw_image(0, 0, 0, 2, imgs[9]);
     image13169.save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-RGB13-16-9.png").c_str());
+}
+
+void CHRISReader::writeAllCompos(cimg_library::CImg<unsigned short> &img)
+{
+    std::cout << "Dumping all 63 channels... (Temporary!)" << std::endl;
+    cimg_library::CImg<unsigned short> imgs[63];
+    for (int i = 0; i < 63; i++)
+    {
+        imgs[i] = img;
+        imgs[i].crop(4 + i * 192, 4 + i * 192 + 186);
+        imgs[i].save_png(std::string(output_folder + "/CHRIS-" + std::to_string(count) + "-CHANNEL-" + std::to_string(i + 1) + ".png").c_str());
+    }
 }
 
 std::string CHRISReader::getModeName(int mode)
