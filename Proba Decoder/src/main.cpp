@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     // Output and Input file
     std::ifstream data_in(argv[2], std::ios::binary);
-    //std::ofstream data_out("chrisall.bin", std::ios::binary);
+    //std::ofstream data_out("chris.bin", std::ios::binary);
 
     std::string output_folder = ".";
     if (argc == 4)
@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
 
                         if (pkt.header.apid == 0)
                         {
-                            int mode_marker = pkt.payload[1];
-                            if (mode_marker == 169)
+                            int mode_marker = pkt.payload[9] & 0x03;
+                            if (mode_marker == 1)
                                 hrc_reader.work(pkt);
                             else
                                 chris_reader.work(pkt);
